@@ -3,13 +3,13 @@
  * Общий базовый класс 
  */
 
-class Controller_Base extends Controller_Template {
+class Controller_Base extends Controller {
 
     protected $auth;
     protected $session; 
     protected $user;
     protected $domain_name;
-    public $template = 'v_base';
+    public $template = '';
     public $auth_required = false;
     public $auto_render = true;
 
@@ -25,11 +25,20 @@ class Controller_Base extends Controller_Template {
         $this->user = $this->auth->get_user(); /* получаем данные авторизированого пользователя */
         $this->session = Session::instance();
         
+        $this->template = View::factory('v_base');
+        
         // верхнее меню
-        $menu = View::factory('block/v_menu');
-        $this->template->menu = $menu;
-
-       
+        $list_menu_top = array(
+            ''=>'Главная',
+            'php'=>'PHP',
+            'sql'=>'SQL',
+            'jquery'=>'JQuery'
+        );
+        $menu_top = View::factory('block/v_menu');
+        $this->template->menu = $menu_top;
+        $this->template->menu->list = $list_menu_top;
+        
+        
         // footer
         $footer = View::factory('block/v_footer');
         $this->template->footer = $footer;
@@ -45,15 +54,43 @@ class Controller_Base extends Controller_Template {
             // Подключаем стили
            $this->template->styles = array(
                'media/css/style.css',
-               'media/css/menu.css',
+               'media/css/block/menu.css',
+               'media/css/block/menu_left.css',
+               'media/css/block/footer.css',
+                'media/css/'.mb_strtolower($this->request->directory()).'/'.mb_strtolower($this->request->controller()).'.css'
            );
          
             // Подключаем скрипты
             $this->template->scripts = array(
-                'media/libs/jquery.min.js',
+                'media/libs/jquery.js',
                 'media/libs/jquery.pjax.js',
-                'media/js/js.js',                
+                'media/js/js.js', 
+                 'media/js/'.mb_strtolower($this->request->directory()).'/'.mb_strtolower($this->request->controller()).'.js'
             );
-        }     
-    }    
+        }
+        if(isset($_GET['_pjax'])){
+                    echo '<script type="text/javascript">';
+                    echo '$("body").removeAttr("class");';
+                    
+                    foreach ( $this->template->styles as $styles){
+                        echo 'if($("head link[href=\"/'.$styles.'\"]").length == 0){
+                        $("head").append("<link>");
+                            css = $("head").children(":last");
+                            css.attr({
+                            rel:  "stylesheet",
+                            type: "text/css",
+                            href: "/'.$styles.'"
+                            });
+                        }';
+                    }
+                    foreach ($this->template->scripts as $script){
+                        echo 'if($("head script[src=\"/'.$script.'\"]").length == 0){';
+                        echo 'var s = document.createElement("script");';
+                        echo 's.type = "text/javascript";s.src = "/'.$script.'";';
+                        echo 'document.head.appendChild(s);';
+                         echo'}';
+                    }
+                echo '</script>';
+                }     
+    }
 }

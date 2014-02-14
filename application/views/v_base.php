@@ -12,10 +12,11 @@
         <? endforeach ?>
     </head>
     <body>
-        <? if(isset($menu)):?><?=$menu?><? endif;?>
-        
-        <?if(isset($page)):?><?=$page?><? endif;?>
+        <div id="body">
+            <? if(isset($menu)):?><div id="menu"><?=$menu?></div><? endif;?>
 
-        <?if(isset($footer)):?><?=$footer?><? endif;?>
+            <?if(isset($page)):?><div id="content"><?=$page?></div><? endif;?>
+        </div>
+        <?if(isset($footer)):?><div id="footer"><?=$footer?></div><? endif;?>
     </body>
 </html>
